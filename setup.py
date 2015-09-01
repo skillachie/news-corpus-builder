@@ -1,12 +1,14 @@
-#from distutils.core import setup,find_packages
+#from distutils.core import setup
 from setuptools import setup, find_packages
-import setuptools
+#import setuptools
 
 setup(
     name='news-corpus-builder',
     version='0.1.0',
     packages=find_packages(),
-    package_dir={'news_corpus_generator': 'news_corpus_generator'},
+    include_package_data=True,
+    #zip_safe=False,
+    #package_dir={'news_corpus_generator': 'news_corpus_generator'},
     author='Dwayne V Campbell',
     author_email='dwaynecampbell13 _at_ gmail.com',
     description='Quickly build a news/web corpus with specifc topics or terms automatically from Google News or by specifying \
