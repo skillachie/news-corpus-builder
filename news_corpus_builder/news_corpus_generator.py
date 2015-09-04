@@ -7,10 +7,21 @@ import json
 import io
 from collections import defaultdict
 import sqlite3
+import string
 
 class NewsCorpusGenerator(object):
 
     def __init__(self,corpus_dir,datastore_type='file',db_name='corpus.db'):
+        '''
+        Read links and associated categories for specified articles 
+        in text file seperated by a space
+
+        Args:
+            corpus_dir (str): The directory to save the generated corpus
+            datastore_type (Optional[str]): Format to save generated corpus.
+                                            Specify either 'file' or 'sqlite'.
+            db_name (Optional[str]): Name of database if 'sqlite' is selected.
+        '''
 
         self.g = Goose({'browser_user_agent': 'Mozilla'})
         self.corpus_dir = corpus_dir
@@ -57,9 +68,8 @@ class NewsCorpusGenerator(object):
         return articles
 
     def generate_corpus(self,articles):
-        '''
-        '''
-
+        
+        # TODO parallelize extraction process
         print 'Extracting  content from links...'
 
         for article in articles:
@@ -70,7 +80,7 @@ class NewsCorpusGenerator(object):
             ex_body = ex_article.cleaned_text
 
             if ex_body == '':
-                self.stats['empty_body'] += 1
+                self.stats['empty_body_articles'] += 1
                 continue
 
             self._save_article({'title':ex_title, 'body': ex_body,
@@ -78,8 +88,6 @@ class NewsCorpusGenerator(object):
 
 
     def _save_article(self,clean_article):
-        '''
-        '''
 
         print "Saving article %s..." %(clean_article['title'])
 
@@ -90,6 +98,10 @@ class NewsCorpusGenerator(object):
         else:
             raise Exception("Unsupported datastore type. Please specify file or sqlite")
 
+    def _remove_punctuations(self,title):
+        # TODO optimize for python 3
+        #title.translate(title.maketrans("",""), string.punctuation)
+        return "".join(char for char in title if char not in string.punctuation)
 
     def _save_flat_file(self,clean_article):
 
@@ -99,7 +111,8 @@ class NewsCorpusGenerator(object):
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        file_name = directory + '/' + clean_article['title'].replace(" ","_") + '.txt'
+        file_name = directory + '/' + \
+        self._remove_punctuations(clean_article['title']).replace(" ","_") + '.json'
 
         with io.open(file_name, 'w', encoding='utf-8') as f:
               f.write(unicode(json.dumps(clean_article, ensure_ascii=False)))
@@ -161,17 +174,4 @@ class NewsCorpusGenerator(object):
 
 
 if __name__ == '__main__':
-    file_path = '/Users/skillachie/Development/news_corpus_builder/articles.txt'
-    corpus_dir = '/Users/skillachie/finance_corpus'
-
-    ex = NewsCorpusGenerator(corpus_dir,'file')
-    article_links = ex.read_links_file(file_path)
-    #pprint(article_links)
-
-    goog = ex.google_news_search('sec','Regulation',100)
-    article_links.extend(goog)
-    #pprint(article_links)
-
-    #sys.exit(0)
-    ex.generate_corpus(article_links)
-    pprint(ex.get_stats())
+    pass

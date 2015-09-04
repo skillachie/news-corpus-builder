@@ -7,8 +7,6 @@ setup(
     version='0.1.0',
     packages=find_packages(),
     include_package_data=True,
-    #zip_safe=False,
-    #package_dir={'news_corpus_generator': 'news_corpus_generator'},
     author='Dwayne V Campbell',
     author_email='dwaynecampbell13 _at_ gmail.com',
     description='Quickly build a news/web corpus with specifc topics or terms automatically from Google News or by specifying \
