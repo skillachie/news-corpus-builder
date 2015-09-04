@@ -8,6 +8,8 @@ import io
 from collections import defaultdict
 import sqlite3
 import string
+import urllib
+
 
 class NewsCorpusGenerator(object):
 
@@ -117,11 +119,17 @@ class NewsCorpusGenerator(object):
         with io.open(file_name, 'w', encoding='utf-8') as f:
               f.write(unicode(json.dumps(clean_article, ensure_ascii=False)))
 
+    def _encode_query(self,query):
+        # TODO Python 3 urllib.parse.quote 
+        return urllib.quote(query)
+
 
     def google_news_search(self,query,category_label,num=50):
         '''
         Searches Google News.
         NOTE: Official Google News API is deprecated https://developers.google.com/news-search/?hl=en
+        NOTE: Google limits the maximum number of documents per query to 100.
+              Use multiple related queries to get a bigger corpus. 
 
         Args:
             query (str): The search term.
@@ -135,7 +143,9 @@ class NewsCorpusGenerator(object):
                       ex. [('IPO','www.cs.columbia.edu')]
         '''
 
-        url = 'https://news.google.com/news?hl=en&q='+query+'&num='+str(num)+'&output=rss'
+        url = 'https://news.google.com/news?hl=en&q='+self._encode_query(query) \
+                +'&num='+str(num)+'&output=rss'
+
         rss = feedparser.parse(url)
         entries = rss['entries']
         articles = []
@@ -167,6 +177,7 @@ class NewsCorpusGenerator(object):
                 cur.execute("INSERT INTO articles (Id,category,title,body)\
                     VALUES(?, ?, ?,?)",(None,clean_article['category'],clean_article['title'],clean_article['body']))
             except sqlite3.IntegrityError:
+                self.stats['not_insert_db'] += 1
                 print 'Record already inserted with title %s ' %(clean_article['title'])
 
     def get_stats(self):
