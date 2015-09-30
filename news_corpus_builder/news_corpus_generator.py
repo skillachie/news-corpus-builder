@@ -25,7 +25,8 @@ class NewsCorpusGenerator(object):
             db_name (Optional[str]): Name of database if 'sqlite' is selected.
         '''
 
-        self.g = Goose({'browser_user_agent': 'Mozilla'})
+        self.g = Goose({'browser_user_agent': 'Mozilla','parser_class':'soup'})
+        #self.g = Goose({'browser_user_agent': 'Mozilla'})
         self.corpus_dir = corpus_dir
         self.datastore_type = datastore_type
         self.db_name = db_name
@@ -77,9 +78,20 @@ class NewsCorpusGenerator(object):
         for article in articles:
             category = article[0]
             link = article[1]
-            ex_article = self.g.extract(url=link)
+
+	    ex_article = None
+
+	    try:
+            	ex_article = self.g.extract(url=link)
+	    except Exception:
+		print('failed to extract article..')
+		continue
+
             ex_title = ex_article.title
             ex_body = ex_article.cleaned_text
+	    #print ex_title
+            #print ex_body
+            #sys.exit(1)
 
             if ex_body == '':
                 self.stats['empty_body_articles'] += 1
@@ -87,7 +99,6 @@ class NewsCorpusGenerator(object):
 
             self._save_article({'title':ex_title, 'body': ex_body,
                 'category':category})
-
 
     def _save_article(self,clean_article):
 
