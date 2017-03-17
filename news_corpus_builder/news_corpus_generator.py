@@ -102,7 +102,7 @@ class NewsCorpusGenerator(object):
 
     def _save_article(self,clean_article):
 
-        print "Saving article %s..." %(clean_article['title'])
+        print "Saving article %s..." %(clean_article['title'].encode("utf-8"))
 
         if self.datastore_type == 'file':
             self._save_flat_file(clean_article)
