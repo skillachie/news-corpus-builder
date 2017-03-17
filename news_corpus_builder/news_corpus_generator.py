@@ -189,7 +189,7 @@ class NewsCorpusGenerator(object):
                     VALUES(?, ?, ?,?)",(None,clean_article['category'],clean_article['title'],clean_article['body']))
             except sqlite3.IntegrityError:
                 self.stats['not_insert_db'] += 1
-                print 'Record already inserted with title %s ' %(clean_article['title'])
+                print 'Record already inserted with title %s ' %(clean_article['title'].encode("utf-8"))
 
     def get_stats(self):
         return self.stats
